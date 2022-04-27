@@ -106,7 +106,7 @@ app.post("/api/v1/users", async (req, res) => {
 });
 
 /**
- * ユーザ新規追加.
+ * ユーザ情報編集.
  */
 app.put("/api/v1/users", async (req, res) => {
   //DBへの接続
@@ -132,6 +132,23 @@ app.put("/api/v1/users", async (req, res) => {
       "ユーザ情報を更新しました"
     );
   });
+  db.close();
+});
+
+/**
+ * ユーザ削除.
+ */
+app.delete("/api/v1/users/:id", async (req, res) => {
+  const db = new sqlite3.Database(dbPath);
+  const id = req.params.id;
+
+  await run(
+    `DELETE FROM users WHERE id=${id}`,
+    db,
+    res,
+    "ユーザーを削除しました。"
+  );
+
   db.close();
 });
 
