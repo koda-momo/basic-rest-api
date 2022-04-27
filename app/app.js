@@ -108,12 +108,12 @@ app.post("/api/v1/users", async (req, res) => {
 /**
  * ユーザ情報編集.
  */
-app.put("/api/v1/users", async (req, res) => {
+app.put("/api/v1/users/:id", async (req, res) => {
   //DBへの接続
   const db = new sqlite3.Database(dbPath);
 
   //編集するユーザのID
-  const id = req.body.id;
+  const id = req.params.id;
 
   //現在のユーザ情報を取得
   db.get(`SELECT * FROM users WHERE id = ${id};`, async (err, row) => {

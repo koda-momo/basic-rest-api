@@ -33,6 +33,28 @@ const indexModule = (() => {
       });
       break;
 
+    case "/edit.html":
+      //URLからid取得
+      const uid = window.location.search.split("?uid=")[1];
+
+      /**
+       * ユーザ情報編集.
+       */
+      document.getElementById("save-btn").addEventListener("click", () => {
+        return usersModule.saveUser(uid);
+      });
+      /**
+       * 削除ボタン押下.
+       */
+      document.getElementById("delete-btn").addEventListener("click", () => {
+        return usersModule.deleteUser(uid);
+      });
+      /**
+       * 初期情報取得.
+       */
+      return usersModule.setExistingValue(uid);
+      break;
+
     default:
       break;
   }

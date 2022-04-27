@@ -12,25 +12,19 @@
   </head>
   <body>
     <main>
-      <h1>Re:ゼロから始めるユーザ管理</h1>
-      <label for="search">ユーザ名で検索</label>
-      <input type="text" id="search" />
-      <button id="search-btn">検索</button>
-      <a href="create.html">新規作成</a>
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>ユーザ名</th>
-            <th>プロフィール</th>
-            <th>誕生日</th>
-            <th>登録日時</th>
-            <th>更新日時</th>
-            <th>メニュー</th>
-          </tr>
-        </thead>
-        <tbody id="users-list"></tbody>
-      </table>
+      <h1>Re:ゼロから始めるユーザ編集</h1>
+      <label for="uid">ID</label>
+      <input type="text" id="uid" placeholder="自動採番されます" disabled />
+      <label for="name">ユーザ名</label>
+      <input type="text" id="name" />
+      <label for="profile">プロフィール</label>
+      <input type="text" id="profile" />
+      <label for="date-of-birth">誕生日</label>
+      <input type="text" id="date-of-birth" />
+      <button id="save-btn">保存する</button>
+      <button id="cancel-btn">キャンセル</button>
+      <p>このユーザを削除しますか？</p>
+      <button id="delete-btn">削除する</button>
     </main>
   </body>
 </html>
