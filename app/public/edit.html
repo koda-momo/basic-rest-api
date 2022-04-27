@@ -1,0 +1,30 @@
+<!-- 静的ファイルのベースとなるHTMLファイル -->
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Re:ゼロから始めるWeb API入門実践編</title>
+    <!-- jsファイルの呼び出し(indexでメソッド発火させているので先にメソッドの内容を読み込むように) -->
+    <!-- deferしないとJSが先に読み込まれちゃう→イベントリスナー等が見つからない -->
+    <script src="js/users.js" defer></script>
+    <script src="js/search.js" defer></script>
+    <script src="js/index.js" defer></script>
+  </head>
+  <body>
+    <main>
+      <h1>Re:ゼロから始めるユーザ編集</h1>
+      <label for="uid">ID</label>
+      <input type="text" id="uid" placeholder="自動採番されます" disabled />
+      <label for="name">ユーザ名</label>
+      <input type="text" id="name" />
+      <label for="profile">プロフィール</label>
+      <input type="text" id="profile" />
+      <label for="date-of-birth">誕生日</label>
+      <input type="text" id="date-of-birth" />
+      <button id="save-btn">保存する</button>
+      <button id="cancel-btn">キャンセル</button>
+      <p>このユーザを削除しますか？</p>
+      <button id="delete-btn">削除する</button>
+    </main>
+  </body>
+</html>
