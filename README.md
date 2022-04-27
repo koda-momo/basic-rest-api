@@ -1,6 +1,5 @@
 # basic-rest-api
-【Node.js, Express, SQLite3】Node.js練習用
-Redux練習用に作成したECサイトです。<a href="https://www.youtube.com/playlist?list=PLX8Rsrpnn3IVW5P1H1s_AOP0EEyMyiRDA">こちら</a>を参考にして作成
+【Node.js, Express, SQLite3】Node.js練習用<a href="https://www.youtube.com/playlist?list=PLX8Rsrpnn3IVW5P1H1s_AOP0EEyMyiRDA">こちら</a>を参考にして作成
 
 ## ■使用技術
 <ul>
