@@ -22,19 +22,17 @@ app.use(bodyParser.json());
  * @param sql - 実行するSQL文
  * @returns APIを動かして返すデータ
  */
-const run = async (sql, db, res, message) => {
+const run = async (sql, db) => {
   //Promise:結果が来るまで待つ
   //reject→失敗
   return new Promise((resolve, reject) => {
     //sqliteのメソッド
     db.run(sql, (err) => {
       if (err) {
-        //サーバ側のエラー→500を返す
-        res.status(500).send(err);
-        return reject();
+        //失敗したらこのerrがcatchに入る
+        return reject(err);
       } else {
         //成功→messageを返す
-        res.json({ message: message });
         return resolve();
       }
     });
@@ -64,7 +62,11 @@ app.get("/api/v1/users/:id", (req, res) => {
   const id = req.params.id;
   //データを全て取得しない場合は「row」
   db.get(`SELECT * FROM users WHERE id = ${id};`, (err, row) => {
-    res.json(row);
+    if (row) {
+      res.status(200).json(row);
+    } else {
+      res.status(404).send({ error: "ユーザが見つかりません" });
+    }
   });
   db.close();
 });
@@ -77,7 +79,11 @@ app.get("/api/v1/search", (req, res) => {
   const keyword = req.query.q;
 
   db.all(`SELECT * FROM users WHERE name LIKE "%${keyword}%"`, (err, rows) => {
-    res.json(rows);
+    if (rows) {
+      res.status(200).json(rows);
+    } else {
+      res.status(404).send({ error: "ユーザが見つかりません" });
+    }
   });
 
   db.close();
@@ -87,22 +93,28 @@ app.get("/api/v1/search", (req, res) => {
  * ユーザ新規追加.
  */
 app.post("/api/v1/users", async (req, res) => {
-  //DBへの接続
-  const db = new sqlite3.Database(dbPath);
+  if (!req.body.name || req.body.name == "") {
+    res.status(400).send({ error: "ユーザ名が指定されていません" });
+  } else {
+    //DBへの接続
+    const db = new sqlite3.Database(dbPath);
+    //登録するデータの作成
+    const name = req.body.name;
+    const profile = req.body.profile ? req.body.profile : "";
+    const dateOfBirth = req.body.date_of_birth ? req.body.date_of_birth : "";
 
-  //登録するデータの作成
-  const name = req.body.name;
-  const profile = req.body.profile ? req.body.profile : "";
-  const dateOfBirth = req.body.date_of_birth ? req.body.date_of_birth : "";
-
-  //SQL文(上記のrunメソッドに下記SQL文を渡す)→awaitを付けているのでrunの実行が終わるまで待つ
-  await run(
-    `INSERT INTO users (name,profile,date_of_birth) VALUES ("${name}","${profile}","${dateOfBirth}");`,
-    db,
-    res,
-    "新規ユーザを登録しました"
-  );
-  db.close();
+    try {
+      //SQL文(上記のrunメソッドに下記SQL文を渡す)→awaitを付けているのでrunの実行が終わるまで待つ
+      await run(
+        `INSERT INTO users (name,profile,date_of_birth) VALUES ("${name}","${profile}","${dateOfBirth}");`,
+        db
+      );
+      res.status(201).send({ message: "新規ユーザを登録しました" });
+    } catch (e) {
+      res.status(500).send({ error: e });
+    }
+    db.close();
+  }
 });
 
 /**
@@ -117,20 +129,27 @@ app.put("/api/v1/users/:id", async (req, res) => {
 
   //現在のユーザ情報を取得
   db.get(`SELECT * FROM users WHERE id = ${id};`, async (err, row) => {
-    //登録するデータの作成
-    const name = req.body.name ? req.body.name : row.name;
-    const profile = req.body.profile ? req.body.profile : row.profile;
-    const dateOfBirth = req.body.date_of_birth
-      ? req.body.date_of_birth
-      : row.date_of_birth;
+    if (row) {
+      //登録するデータの作成
+      const name = req.body.name ? req.body.name : row.name;
+      const profile = req.body.profile ? req.body.profile : row.profile;
+      const dateOfBirth = req.body.date_of_birth
+        ? req.body.date_of_birth
+        : row.date_of_birth;
 
-    //SQL文(上記のrunメソッドに下記SQL文を渡す)→awaitを付けているのでrunの実行が終わるまで待つ
-    await run(
-      `UPDATE users SET name="${name}",profile="${profile}",date_of_birth="${dateOfBirth}" WHERE id = "${id}";`,
-      db,
-      res,
-      "ユーザ情報を更新しました"
-    );
+      //SQL文(上記のrunメソッドに下記SQL文を渡す)→awaitを付けているのでrunの実行が終わるまで待つ
+      try {
+        await run(
+          `UPDATE users SET name="${name}",profile="${profile}",date_of_birth="${dateOfBirth}" WHERE id = "${id}";`,
+          db
+        );
+        res.status(200).send({ message: "ユーザ情報を更新しました" });
+      } catch (e) {
+        res.status(500).send({ error: e });
+      }
+    } else {
+      res.status(404).send({ error: "指定されたユーザが見つかりません" });
+    }
   });
   db.close();
 });
@@ -142,12 +161,18 @@ app.delete("/api/v1/users/:id", async (req, res) => {
   const db = new sqlite3.Database(dbPath);
   const id = req.params.id;
 
-  await run(
-    `DELETE FROM users WHERE id=${id}`,
-    db,
-    res,
-    "ユーザーを削除しました。"
-  );
+  db.get(`SELECT * FROM users WHERE id = ${id};`, async (err, row) => {
+    if (row) {
+      try {
+        await run(`DELETE FROM users WHERE id=${id}`, db);
+        res.status(200).send({ message: "ユーザーを削除しました。" });
+      } catch (e) {
+        res.status(500).send({ error: e });
+      }
+    } else {
+      res.status(404).send({ error: "指定されたユーザが見つかりません" });
+    }
+  });
 
   db.close();
 });

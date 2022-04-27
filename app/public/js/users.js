@@ -8,6 +8,40 @@ const usersModule = (() => {
   const headers = new Headers();
   headers.set("Content-Type", "application/json");
 
+  //error
+  const handleError = async (res) => {
+    const resJson = await res.json();
+    switch (res.status) {
+      //成功したらmessageをアラートで出して、TOPに戻る
+      case 200:
+        alert(resJson.message);
+        window.location.href = "/";
+        break;
+
+      case 201:
+        alert(resJson.message);
+        window.location.href = "/";
+        break;
+
+      //失敗
+      case 400:
+        alert(resJson.error);
+        break;
+
+      case 404:
+        alert(resJson.error);
+        break;
+
+      case 500:
+        alert(resJson.error);
+        break;
+
+      default:
+        alert("何かしらのエラーが発生しました");
+        break;
+    }
+  };
+
   return {
     /**
      * ユーザ情報の取得.
@@ -64,11 +98,7 @@ const usersModule = (() => {
         headers: headers,
         body: JSON.stringify(body), //リクエストをJSON形式で送る
       });
-      const resJson = await res.json();
-
-      //成功したらmessageをアラートで出して、TOPに戻る
-      alert(resJson.message);
-      window.location.href = "/";
+      handleError(res);
     },
     /**
      * ユーザ情報の編集.
@@ -91,11 +121,7 @@ const usersModule = (() => {
         headers: headers,
         body: JSON.stringify(body),
       });
-      const resJson = await res.json();
-
-      //成功したらmessageをアラートで出して、TOPに戻る
-      alert(resJson.message);
-      window.location.href = "/";
+      handleError(res);
     },
     /**
      * ユーザ情報の削除.
@@ -110,11 +136,7 @@ const usersModule = (() => {
           method: "DELETE",
           headers: headers,
         });
-        const resJson = await res.json();
-
-        //成功したらmessageをアラートで出して、TOPに戻る
-        alert(resJson.message);
-        window.location.href = "/";
+        handleError(res);
       }
     },
   };
