@@ -9,6 +9,7 @@ const indexModule = (() => {
   });
   /**
    * usersモジュールの呼び出し.
+   * @remarks 初期表示
    */
   return usersModule.fetchAllUsers();
 })();
