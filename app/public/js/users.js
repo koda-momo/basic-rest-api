@@ -4,8 +4,14 @@ const usersModule = (() => {
   //URLの設定
   const BASE_URL = "http://localhost:3000/api/v1/users";
 
+  //header(JSONで送る設定)
+  const headers = new Headers();
+  headers.set("Content-Type", "application/json");
+
   return {
-    //API呼び出し
+    /**
+     * ユーザ情報の取得.
+     */
     fetchAllUsers: async () => {
       //fetch(URL)でGETになる
       const res = await fetch(BASE_URL);
@@ -26,6 +32,36 @@ const usersModule = (() => {
           .getElementById("users-list")
           .insertAdjacentHTML("beforeend", body);
       }
+    },
+
+    /**
+     * ユーザの新規作成.
+     */
+    createUser: async () => {
+      console.dir(
+        "送るデータ" + JSON.stringify(document.getElementById("name").value)
+      );
+      const name = document.getElementById("name").value;
+      const profile = document.getElementById("profile").value;
+      const dateOfBirth = document.getElementById("date-of-birth").value;
+
+      //POST、PUTで送るリクエスト
+      const body = {
+        name: name,
+        profile: profile,
+        date_of_birth: dateOfBirth,
+      };
+
+      const res = await fetch(BASE_URL, {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(body),
+      });
+      const resJson = await res.json();
+
+      //成功したらmessageをアラートで出して、TOPに戻る
+      alert(resJson.message);
+      window.location.href = "/";
     },
   };
 })();
