@@ -1,7 +1,14 @@
+//express
 const express = require("express");
 const app = express();
+
+//SQLite
 const sqlite3 = require("sqlite3");
 const dbPath = "app/db/database.sqlite3";
+
+//publicディレクトリを静的ファイルとして扱う
+const path = require("path");
+app.use(express.static(path.join(__dirname, "public")));
 
 //URLの設定と返すデータ
 /**
