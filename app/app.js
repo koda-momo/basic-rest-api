@@ -16,6 +16,31 @@ const res = require("express/lib/response");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+/**
+ * SQL文を受け取って発動させるするメソッド.
+ * @remarks db.runがSQLiteでSQLを実行するメソッド
+ * @param sql - 実行するSQL文
+ * @returns APIを動かして返すデータ
+ */
+const run = async (sql, db, res, message) => {
+  //Promise:結果が来るまで待つ
+  //reject→失敗
+  return new Promise((resolve, reject) => {
+    //sqliteのメソッド
+    db.run(sql, (err) => {
+      if (err) {
+        //サーバ側のエラー→500を返す
+        res.status(500).send(err);
+        return reject();
+      } else {
+        //成功→messageを返す
+        res.json({ message: message });
+        return resolve();
+      }
+    });
+  });
+};
+
 //URLの設定と返すデータ
 /**
  * ユーザ全員の情報を取得.
@@ -70,36 +95,43 @@ app.post("/api/v1/users", async (req, res) => {
   const profile = req.body.profile ? req.body.profile : "";
   const dateOfBirth = req.body.date_of_birth ? req.body.date_of_birth : "";
 
-  /**
-   * SQL文を受け取ってPOSTするメソッド.
-   * @remarks db.runがSQLiteでSQLを実行するメソッド
-   * @param sql - 実行するSQL文
-   * @returns APIを動かして返すデータ
-   */
-  const run = async (sql) => {
-    //Promise:結果が来るまで待つ
-    //reject→失敗
-    return new Promise((resolve, reject) => {
-      //sqliteのメソッド
-      db.run(sql, (err) => {
-        if (err) {
-          //サーバ側のエラー→500を返す
-          res.status(500).send(err);
-          return reject();
-        } else {
-          //成功→messageを返す
-          res.json({ message: "新規ユーザを追加しました" });
-          return resolve();
-        }
-      });
-    });
-  };
-
   //SQL文(上記のrunメソッドに下記SQL文を渡す)→awaitを付けているのでrunの実行が終わるまで待つ
   await run(
     `INSERT INTO users (name,profile,date_of_birth) VALUES ("${name}","${profile}","${dateOfBirth}");`,
-    (err, rows) => {}
+    db,
+    res,
+    "新規ユーザを登録しました"
   );
+  db.close();
+});
+
+/**
+ * ユーザ新規追加.
+ */
+app.put("/api/v1/users", async (req, res) => {
+  //DBへの接続
+  const db = new sqlite3.Database(dbPath);
+
+  //編集するユーザのID
+  const id = req.body.id;
+
+  //現在のユーザ情報を取得
+  db.get(`SELECT * FROM users WHERE id = ${id};`, async (err, row) => {
+    //登録するデータの作成
+    const name = req.body.name ? req.body.name : row.name;
+    const profile = req.body.profile ? req.body.profile : row.profile;
+    const dateOfBirth = req.body.date_of_birth
+      ? req.body.date_of_birth
+      : row.date_of_birth;
+
+    //SQL文(上記のrunメソッドに下記SQL文を渡す)→awaitを付けているのでrunの実行が終わるまで待つ
+    await run(
+      `UPDATE users SET name="${name}",profile="${profile}",date_of_birth="${dateOfBirth}" WHERE id = "${id}";`,
+      db,
+      res,
+      "ユーザ情報を更新しました"
+    );
+  });
   db.close();
 });
 
